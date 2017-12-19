@@ -1,0 +1,72 @@
+#!/bin/bash
+
+SESSION=$USER
+force=0
+
+while getopts ":s:f" opt; do
+  case ${opt} in
+    f  ) force=1
+         ;;
+    s  ) SESSION=$OPTARG
+         ;;
+    \? ) echo "Usage: ./mysession [-f] [-s session_name]"
+         exit 1
+         ;;
+  esac
+done
+
+if [ $force -eq 1 ];
+then
+    tmux kill-session -t $SESSION
+fi
+
+tmux new-session -s $SESSION -d
+if [ $? -ne 0 ]
+then
+   echo "session $SESSION already exists"
+   exit 1
+fi
+
+#code browser
+tmux rename-window -t $SESSION:1 'browser'
+tmux split-window -h
+tmux select-pane -t $SESSION:1.2
+tmux send-keys 'vim --servername fileviewer' C-m
+tmux select-pane -t $SESSION:1.1
+tmux resize-pane -x 16
+tmux send-keys vifm C-m
+
+#fab
+tmux new-window -t $SESSION:2 -n 'fab'
+tmux split-window -h
+tmux select-pane -t $SESSION:2.1
+tmux split-window -v
+tmux select-pane -t $SESSION:2.3
+tmux split-window -v
+
+#colo
+tmux new-window -t $SESSION:3 -n 'colo'
+tmux split-window -v
+tmux select-pane -t $SESSION:3.1
+send-keys 'kconsole etgcolo' C-m
+send-keys C-m
+send-keys 'abc' C-m
+tmux select-pane -t $SESSION:3.2
+send-keys 'kconsole etgcolo' C-m
+send-keys C-m
+send-keys 'abc' C-m
+
+#config
+tmux new-window -t $SESSION:4 -n 'config'
+tmux select-pane -t $SESSION:4.1
+tmux send-keys 'cd /home/xin/proj' C-m
+
+#code
+tmux new-window -t $SESSION:5 -n 'gtrunk'
+tmux split-window -v
+tmux select-pane -t $SESSION:5.2
+tmux resize-pane -y 5
+tmux send-keys 'cd /home/xin/cmake_test' C-m
+tmux select-pane -t $SESSION:5.1
+tmux send-keys 'cd /home/xin/proj' C-m
+
